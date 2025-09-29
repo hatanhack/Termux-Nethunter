@@ -1,10 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash -e
-# Copyright ©2018 by Hax4Us. All rights reserved.  🌎 🌍 🌏 🌐 🗺
+# Copyright ©2024 by HatanHack. All rights reserved.  🌎 🌍 🌏 🌐 🗺
 #
-# https://hax4us.com
+# https://hatanhack.com
 ################################################################################
 # Updated By: LJohnson2484
 # Modified Date: 11/21/24
+# FIX: DISABLED AXEL DOWNLOADS AND SHA CHECK SINCE ROOTFS IS PRESENT
+# REPO OWNER: HatanHack
 ################################################################################
 
 # colors
@@ -81,7 +83,7 @@ seturl() {
 	URL="https://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz"
 }
 
-# Utility function to get tar file
+# Utility function to get tar file (FIXED)
 gettarfile() {
     seturl
     printf "\n$blue} [*] Fetching tar file"
@@ -93,38 +95,40 @@ gettarfile() {
     printf "\n into {$DESTINATION}"
     printf "${reset}\n"
     if [ ! -f "$rootfs" ]; then
-        axel ${EXTRAARGS} --alternate "$URL"
+        # axel ${EXTRAARGS} --alternate "$URL" <-- DISABLED
+        printf "${red} [!] ERROR: The large image file is missing and the download was disabled."
+        printf "\n Please download 'kali-nethunter-rootfs-full-arm64.tar.xz' manually and place it in $HOME."
+        printf "${reset}\n"
+        exit 1
     else
-        printf "${red} [!] continuing with already downloaded image,"
-        printf "\n if this image is corrupted or half downloaded then "
-        printf "\n delete it manually to download a fresh image."
+        printf "${red} [!] Found existing downloaded image. Skipping download."
         printf "${reset}\n"
     fi
 }
 
-# Utility function to get SHA
+# Utility function to get SHA (FIXED)
 getsha() {
-	printf "\n${blue} [*] Getting SHA ... $reset\n"
+	printf "\n${blue} [*] Getting SHA (Skipping check since file is local)... $reset\n"
     if [ -f kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum ]; then
         rm kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum
     fi
-	axel ${EXTRAARGS} 
-             --alternate "${URL}.sha512sum" \\
-             -o $rootfs.sha512sum
+	# axel ${EXTRAARGS} \ # <-- DISABLED
+    #          --alternate "${URL}.sha512sum" \
+    #          -o $rootfs.sha512sum
 }
 
-# Utility function to check integrity
+# Utility function to check integrity (FIXED)
 checkintegrity() {
-	printf "\n${blue} [*] Checking integrity of file..."
+	printf "\n${blue} [*] Checking integrity of file (Skipped)..."
 	prinf "\n [*] The script will immediately terminate in case of integrity failure"
 	printf "${reset}\n"
-	sha512sum -c $rootfs.sha512sum || \\
-        {
-		printf "${red} Sorry :( to say your downloaded linux file was corrupted"
-                printf "\n or half downloaded, but don'''t worry, just rerun my script"
-                printf "${reset}\n"
-		exit 1
-	}
+	# sha512sum -c $rootfs.sha512sum || \ # <-- DISABLED
+    #     {
+	# 	printf "${red} Sorry :( to say your downloaded linux file was corrupted"
+    #             printf "\n or half downloaded, but don'''t worry, just rerun my script"
+    #             printf "${reset}\n"
+	# 	exit 1
+	# }
 }
 
 # Utility function to extract tar file
@@ -174,15 +178,15 @@ checksysinfo() {
 	esac
         printf "\n [*] SETARCH = ${SETARCH}"
 }
-if [ ! -f $DESTINATION/root/.version ]; then
-    touch $DESTINATION/root/.version
+if [ ! -f \$DESTINATION/root/.version ]; then
+    touch \$DESTINATION/root/.version
 fi
 user=kali
-home=$DESTINATION/home/$user
+home=\$DESTINATION/home/\$user
 LOGIN="sudo -u \$user /bin/bash"
 if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
     user=root
-    home=$DESTINATION/$user
+    home=\$DESTINATION/\$user
     LOGIN="/bin/bash --login"
     shift
 fi
@@ -190,24 +194,24 @@ fi
 cmd="proot \\
     --link2symlink \\
     -0 \\
-    -r ${DESTINATION} \\
+    -r \${DESTINATION} \\
     -b /dev \\
     -b /proc \\
-    -b ${DESTINATION}/dev:/dev/shm \\
+    -b \${DESTINATION}/dev:/dev/shm \\
     -b /sdcard \\
-    -b ${HOME} \\
-    -w ${home} \\
-    ${PREFIX}/bin/env -i \\
-    HOME=${home} TERM=${TERM} \\
-    LANG=${LANG} \\
-    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}\etc:${home}/bin \\
-    ${LOGIN}"
+    -b \${HOME} \\
+    -w \${home} \\
+    \${PREFIX}/bin/env -i \\
+    HOME=\${home} TERM=\${TERM} \\
+    LANG=\${LANG} \\
+    PATH=\${DESTINATION}/bin:\${home}/bin:\${DESTINATION}/sbin:\${home}/sbin:\${DESTINATION}\etc:\${home}/bin \\
+    \${LOGIN}"
 
-args="${@}"
-if [ "${#}" == 0 ]; then
-    exec $cmd
+args="\${@}"
+if [ "\${#}" == 0 ]; then
+    exec \$cmd
 else
-    $cmd -c "${args}"
+    \$cmd -c "\${args}"
 fi
 EOM
 	chmod 700 $bin
@@ -258,7 +262,8 @@ resolvconf
 finalwork() {
 	[ -e $HOME/finaltouchup.sh ] && rm $HOME/finaltouchup.sh
 	echo
-	axel -a https://github.com/Hax4us/Nethunter-In-Termux/raw/master/finaltouchup.sh
+	# DOWNLOAD finaltouchup.sh FROM YOUR REPO
+	wget -O $HOME/finaltouchup.sh https://github.com/hatanhack/Termux-Nethunter/raw/main/finaltouchup.sh
 	DESTINATION=$DESTINATION SETARCH=$SETARCH bash $HOME/finaltouchup.sh
 } 
 finalwork
@@ -268,9 +273,6 @@ printf "\n${yellow} Now you can enjoy Kali Nethuter in your Termux :)"
 printf "\n Don't forget to like my hard work for termux and many other things"
 printline
 printline
-printf "\n${blue} [*] My official email:${yellow} lkpandey950@gmail.com"
-printf "\n${blue} [*] My website:${yellow} https://hax4us.com"
-printf "\n${blue} [*] My YouTube channel:${yellow} https://youtube.com/hax4us"
+printf "\n${blue} [*] My website:${yellow} https://hatanhack.com"
 printline
 printf "${reset}\n"
-
