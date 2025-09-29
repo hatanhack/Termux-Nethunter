@@ -273,3 +273,4 @@ printf "\n${blue} [*] My website:${yellow} https://hax4us.com"
 printf "\n${blue} [*] My YouTube channel:${yellow} https://youtube.com/hax4us"
 printline
 printf "${reset}\n"
+
