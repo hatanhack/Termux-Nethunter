@@ -1,25 +1,49 @@
-# Nethunter-In-Termux
-This is a script by which you can install Kali nethunter (Kali Linux) in your termux application without rooted phone 
-### Steps For Installation
-1. Download script in **HOME** `curl -LO https://raw.githubusercontent.com/Hax4us/Nethunter-In-Termux/master/kalinethunter.sh`
-2. Give execution permission `chmod +x kalinethunter.sh`
-3. Run script `./kalinethunter.sh`
+# Termux-Nethunter by HatanHack
 
-### Usage 
-1. Use command `startkali` to start nethunter. Default user is __kali__ and default password is also __kali__.
-2. if you want to start nethunter as a root user then use command `startkali -r`.
+هذا سكريبت تم تطويره خصيصًا لتثبيت بيئة **Kali Nethunter (Kali Linux)** الكاملة داخل تطبيق **Termux** على هاتفك الأندرويد، **دون الحاجة إلى صلاحيات الروت** (Root).
 
-### VNC Guide
-1. To start a vnc session `vnc start`
-2. To stop a vnc session `vnc stop`
-3. To check status ( Display and port number) of vnc session `vnc status`
-4. If user is __kali__ then by default `vnc start` will start vncserver with `DISPLAY=:2` & `PORT=5902` and for root user `DISPLAY=:1` & `PORT=5901`
+### 🚀 خطوات التثبيت
 
+تأكد من وجودك في مجلد **HOME** في Termux قبل البدء.
 
-### In Case Of SSL error: certificate verify failed
-Rerun script with extra parameter `--insecure` or copy paste this command `./kalinethunter.sh --insecure`
+1.  **تنزيل السكريبت:**
+    ```bash
+    curl -LO [https://raw.githubusercontent.com/HatanHack/Termux-Nethunter/master/kalinethunter.sh](https://raw.githubusercontent.com/HatanHack/Termux-Nethunter/master/kalinethunter.sh)
+    ```
+2.  **منح صلاحيات التنفيذ:**
+    ```bash
+    chmod +x kalinethunter.sh
+    ```
+3.  **تشغيل التثبيت:**
+    ```bash
+    ./kalinethunter.sh
+    ```
 
-#### setup LXDE 
-Default __DESKTOP__ is _XFCE4_ but you can setup __LXDE__ also https://www.hax4us.com/2018/07/how-to-install-lxde-in-kali-nethunter.html?m=1
+### 💻 الاستخدام الأساسي
 
-#### You have any idea to improve ? So Just give PR
+1.  **بدء Nethunter:**
+    استخدم الأمر `startkali`. المستخدم الافتراضي هو **`kali`** وكلمة المرور الافتراضية هي أيضًا **`kali`**.
+2.  **بدء بصلاحيات الروت:**
+    إذا أردت بدء Nethunter كمستخدم Root، استخدم الأمر `startkali -r`.
+
+### 🖼️ دليل VNC (الواجهة الرسومية)
+
+تساعدك الأوامر التالية في إدارة جلسات الواجهة الرسومية (VNC) للوصول إلى بيئة سطح المكتب.
+
+| الأمر | الوصف |
+| :--- | :--- |
+| `vnc start` | لبدء جلسة VNC جديدة. |
+| `vnc stop` | لإيقاف جميع جلسات VNC النشطة. |
+| `vnc status` | للتحقق من حالة الجلسات النشطة (يعرض رقم الشاشة والمنفذ). |
+
+**ملاحظة المنفذ:**
+* إذا كان المستخدم **`kali`**، ستبدأ الجلسة افتراضيًا على `DISPLAY=:2` (منفذ: `5902`).
+* إذا كان المستخدم **`root`**، ستبدأ الجلسة افتراضيًا على `DISPLAY=:1` (منفذ: `5901`).
+
+### ⚠️ حل مشكلة SSL
+
+في حالة ظهور خطأ: **`SSL error: certificate verify failed`** أثناء التنزيل:
+
+أعد تشغيل السكريبت مع المعامل الإضافي `--insecure`:
+```bash
+./kalinethunter.sh --insecure
