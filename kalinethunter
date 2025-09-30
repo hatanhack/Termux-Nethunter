@@ -3,7 +3,7 @@ clear
 echo
 DIRECTORY="/data/data/com.termux/files/usr/share/figlet"
 if [ ! -d "$DIRECTORY" ]; then
-apt update && apt install figlet
+apt update && apt install figlet -y
 fi
 figlet -f mini    .....KALI-NETHUNTER IN TERMUX.....
 figlet -f mini    ..... HATANHACK......
@@ -14,25 +14,28 @@ echo
 echo
 echo "Select Your Phone Architecture"
 echo "----------------------------------------------------"
-echo "1)arm64/armv8 (64 bit)"
-echo "2)arm/armhf/armv7 (32 bit)"
-echo "3)64 bit minimal version (try this if option 1 is giving errors)"
+echo "1)arm64/armv8 (64 bit) - Full Version (Recommended)"
+echo "2)arm/armhf/armv7 (32 bit) - Minimal Version"
+echo "3)64 bit minimal version (Try this if option 1 gives errors)"
 echo "4)find your architecture"
 read aarch
 case $aarch in
 1)
 echo
-echo "prerequisites are installing.........."
+echo "Prerequisites are installing..."
 echo
 apt install proot wget tar -y
 echo
-echo "installed successfully.... :D"
+echo "Installed successfully!"
 echo
-echo "Now Kali Nethunter Is Installing......."
+echo "Now Kali Nethunter Is Installing..."
 echo
-wget https://build.nethunter.com/kalifs/kalifs-20170201/kalifs-arm64-full.tar.xz
+# Updated URL and filename for modern Kali images (Full ARM64)
+wget https://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-full-arm64.tar.xz -O kali-rootfs.tar.xz
 echo
-proot --link2symlink tar -xf kalifs-arm64-full.tar.xz
+proot --link2symlink tar -xf kali-rootfs.tar.xz
+# Rename extracted directory
+mv kali-nethunter-rootfs-arm64 kali-arm64
 cd kali-arm64 && echo "nameserver 8.8.8.8" > etc/resolv.conf
 
 cd ../ && echo "proot --link2symlink -0 -r kali-arm64 -b /dev/ -b /sys/ -b /proc/ -b /data/data/com.termux/files/home -b /system -b /mnt /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games TERM=$TERM /bin/bash --login" > startkali.sh
@@ -40,59 +43,65 @@ cd ../ && echo "proot --link2symlink -0 -r kali-arm64 -b /dev/ -b /sys/ -b /proc
 chmod 777 startkali.sh && termux-fix-shebang startkali.sh
 echo
 cd $HOME && chmod -R 777 kali-arm64
-echo "Now You Can Start Kali Linux (Nethunter) By :--> ./startkali.sh"
+echo "Now You Can Start Kali Linux (Nethunter) By: ./startkali.sh"
 echo
 ;;
 2)
-echo "prerequisites are installing.........."
+echo "Prerequisites are installing..."
 echo
 apt install proot wget tar -y
 echo
-echo "installed successfully.... :D"
+echo "Installed successfully!"
 echo
-echo "Now Kali Nethunter Is Installing......."
+echo "Now Kali Nethunter Is Installing..."
 echo
-wget https://build.nethunter.com/kalifs/kalifs-latest/kalifs-armhf-minimal.tar.xz
+# Updated URL and filename for modern Kali images (Minimal ARMHF)
+wget https://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-armhf.tar.xz -O kali-rootfs.tar.xz
 echo
-proot --link2symlink tar -xf kalifs-armhf-minimal.tar.xz
+proot --link2symlink tar -xf kali-rootfs.tar.xz
+# Rename extracted directory
+mv kali-nethunter-rootfs-armhf kali-armhf
 cd kali-armhf && echo "nameserver 8.8.8.8" > etc/resolv.conf
 
 cd ../ && echo "proot --link2symlink -0 -r kali-armhf -b /dev/ -b /sys/ -b /proc/ -b /data/data/com.termux/files/home -b /system -b /mnt /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games TERM=$TERM /bin/bash --login" > startkali.sh
 
 chmod 777 startkali.sh && termux-fix-shebang startkali.sh
 echo
-echo "Now You Can Start Kali Linux (Nethunter) By :--> ./startkali.sh" 
+echo "Now You Can Start Kali Linux (Nethunter) By: ./startkali.sh"
 echo
 ;;
 3)
 echo
-echo "prerequisites are installing.........."
+echo "Prerequisites are installing..."
 echo
 apt install proot wget tar -y
 echo
-echo "installed successfully.... :D"
+echo "Installed successfully!"
 echo
-echo "Now Kali Nethunter Is Installing......."
+echo "Now Kali Nethunter Is Installing..."
 echo
-wget https://build.nethunter.com/kalifs/kalifs-latest/kalifs-arm64-minimal.tar.xz
+# Updated URL and filename for modern Kali images (Minimal ARM64)
+wget https://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-arm64.tar.xz -O kali-rootfs.tar.xz
 echo
-proot --link2symlink tar -xf kalifs-arm64-minimal.tar.xz
+proot --link2symlink tar -xf kali-rootfs.tar.xz
+# Rename extracted directory
+mv kali-nethunter-rootfs-arm64 kali-arm64
 cd kali-arm64 && echo "nameserver 8.8.8.8" > etc/resolv.conf
 
 cd ../ && echo "proot --link2symlink -0 -r kali-arm64 -b /dev/ -b /sys/ -b /proc/ -b /data/data/com.termux/files/home -b /system -b /mnt /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games TERM=$TERM /bin/bash --login" > startkali.sh
 
 chmod 777 startkali.sh && termux-fix-shebang startkali.sh
 echo
-echo "Now You Can Start Kali Linux (Nethunter) By :--> ./startkali.sh"
+echo "Now You Can Start Kali Linux (Nethunter) By: ./startkali.sh"
 echo
 ;;
 4)
 echo
-echo "Your phone architecture is :-"
+echo "Your phone architecture is:"
 aarch=`dpkg --print-architecture`
 if [ $aarch = "aarch64" ] ; then
 echo
-echo "bad luck you are using aarch64 so try your luck because it is not personally tested on aarch64..!!"
+echo "Your phone is aarch64 (64-bit). You should choose option 1 or 3 for installation."
 else
 echo
 echo $aarch
