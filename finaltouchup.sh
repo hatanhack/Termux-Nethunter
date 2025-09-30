@@ -1,67 +1,102 @@
-#!/usr/bin/env bash -e
+#!/data/data/com.termux/files/usr/bin/bash
 
 # Copyright ©2024 by HatanHack. All rights reserved.
 # Website: https://hatanhack.com
 ################################################################################
-# This script runs INSIDE the Kali Chroot to perform final setup,
-# including creating the 'kali' user, setting the password, and updating the system.
+# This script runs INSIDE the Kali Chroot to perform final setup.
 ################################################################################
 
-DESTINATION=${DESTINATION}
-SETARCH=${SETARCH}
-unset DESTINATION
-unset SETARCH
+fix_profile() {
+    if [ -f ${DESTINATION}/root/.bash_profile ]; then
+        sed -i '/if/,/fi/d' "${DESTINATION}/root/.bash_profile"
+    fi
+}
 
-# Colors
-red='\033[1;31m'
-yellow='\033[1;33m'
-blue='\033[1;34m'
-reset='\033[0m'
+fix_sudo() {
+    chmod +s $DESTINATION/usr/bin/sudo
+    chmod +s $DESTINATION/usr/bin/su
+    echo "kali    ALL=(ALL:ALL) ALL" > $DESTINATION/etc/sudoers.d/kali
+    echo "Set disable_coredump false" > $DESTINATION/etc/sudo.conf
+}
 
-printf "\n${blue} [*] Running final configuration steps inside Kali environment..."
-printf "${reset}\n"
+fix_uid() {
+    GID=$(id -g)
+    startkali -r usermod -u $UID kali 2>/dev/null
+    startkali -r groupmod -g $GID kali 2>/dev/null
+}
 
-# 1. Update and Upgrade Kali
-printf "\n${yellow} [*] Updating Kali package list and upgrading packages..."
-apt update
-apt upgrade -y
+create_xsession_handler() {
+    if [ $SETARCH = "arm64" ]; then
+        LIBGCCPATH=/usr/lib/aarch64-linux-gnu
+    else
+        LIBGCCPATH=/usr/lib/arm-linux-gnueabihf
+    fi
+    VNC_WRAPPER=$DESTINATION/usr/bin/vnc
+    cat > $VNC_WRAPPER <<- EOF
+#!/bin/bash
+    
+vnc_start() {
+    if [ ! -f ~/.vnc/passwd ]; then
+        vnc_passwd
+    fi
+    USR=\$(whoami)
+    if [ \$USR = "root" ]; then
+        SCR=:1
+    else
+        SCR=:2
+    fi
+    export USER=\$USR; LD_PRELOAD=$LIBGCCPATH/libgcc_s.so.1 nohup vncserver \$SCR >/dev/null 2>&1 </dev/null
+}
 
-# 2. Set default environment and hostname
-printf "\n${yellow} [*] Setting up environment variables..."
-export LANG=C.UTF-8
-export DEBIAN_FRONTEND=noninteractive
-echo "kali" > /etc/hostname
-echo "127.0.0.1       localhost kali" >> /etc/hosts
-echo "kali" > /etc/chroot-name
+vnc_stop() {
+    vncserver -kill :1
+    vncserver -kill :2
+    return \$?
+}
 
-# 3. Add the default 'kali' user
-printf "\n${yellow} [*] Creating default user 'kali'..."
-adduser --disabled-password --gecos "" kali
+vnc_passwd() {
+    vncpasswd
+    return \$?
+}
 
-# 4. Set default password (default is 'kali')
-# This is a common practice in NetHunter/Kali setups.
-printf "\n${yellow} [*] Setting password for user 'kali' to 'kali' (default)..."
-echo "kali:kali" | chpasswd
+vnc_status() {
+    session_list=\$(vncserver -list)
+    if [[ \$session_list == *"590"* ]]; then
+        echo "\$session_list"
+    else
+        echo "there is nothing to list :)"
+        echo "you can start a new session by << vnc start >>"
+    fi
+}
 
-# 5. Add 'kali' user to sudo group
-printf "\n${yellow} [*] Adding 'kali' user to sudo group..."
-usermod -aG sudo kali
+vnc_kill() {
+    pkill Xtigervnc
+    return \$?
+}
 
-# 6. Install common utilities (optional but recommended)
-printf "\n${yellow} [*] Installing essential tools: nano, wget, curl, net-tools, gnupg..."
-apt install -y nano wget curl net-tools gnupg
+case "\$1" in
+    start)
+        vnc_start
+        ;;
+    stop)
+        vnc_stop
+        ;;
+    status)
+        vnc_status
+        ;;
+    kill)
+        vnc_kill
+        ;;
+    *)
+        echo "[!] invalid input"
+esac
+EOF
+chmod +x $VNC_WRAPPER
+}
 
-# 7. Clean up the apt cache
-printf "\n${yellow} [*] Cleaning up package cache..."
-apt autoremove -y
-apt clean
+## Main
 
-# 8. Set ownership for the 'kali' home directory
-chown -R kali:kali /home/kali
-
-printf "\n${blue} [SUCCESS] Kali Nethunter setup is complete!"
-printf "\n Now type 'startkali.sh' to login."
-printf "${reset}\n"
-
-# Exit the chroot environment cleanly
-exit 0
+fix_profile
+fix_sudo
+fix_uid
+create_xsession_handler
