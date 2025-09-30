@@ -83,12 +83,19 @@ echo
 # Updated URL and filename for modern Kali images (Minimal ARM64)
 wget https://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-arm64.tar.xz -O kali-rootfs.tar.xz
 echo
-proot --link2symlink tar -xf kali-rootfs.tar.xz
-# Rename extracted directory
-mv kali-nethunter-rootfs-arm64 kali-arm64
-cd kali-arm64 && echo "nameserver 8.8.8.8" > etc/resolv.conf
+# The fix for tar mknod errors and mv issues (excluding /dev/ and renaming)
+proot --link2symlink tar -xf kali-rootfs.tar.xz --exclude='dev'
+# Change directory to the extracted folder (must be the correct full name)
+cd kali-nethunter-rootfs-arm64
+# Save nameserver configuration
+echo "nameserver 8.8.8.8" > etc/resolv.conf
+# Go back to the script directory
+cd ../
+# Rename the extracted folder to the simple name expected by the start script
+mv kali-nethunter-rootfs-arm64 kali-arm64 
 
-cd ../ && echo "proot --link2symlink -0 -r kali-arm64 -b /dev/ -b /sys/ -b /proc/ -b /data/data/com.termux/files/home -b /system -b /mnt /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games TERM=$TERM /bin/bash --login" > startkali.sh
+# Now proceed with creating the start script inside the current directory
+echo "proot --link2symlink -0 -r kali-arm64 -b /dev/ -b /sys/ -b /proc/ -b /data/data/com.termux/files/home -b /system -b /mnt /usr/bin/env -i HOME=/root PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games TERM=$TERM /bin/bash --login" > startkali.sh
 
 chmod 777 startkali.sh && termux-fix-shebang startkali.sh
 echo
